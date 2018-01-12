@@ -13,6 +13,9 @@
      * @param   Request $request
      * @return \Illuminate\Http\JsonResponse
      */
+     
+use Illuminate\Support\Facades\Validator;
+
     public function modifyUserInfo(Request $request)
     {
         //自定义验证错误信息
