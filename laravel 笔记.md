@@ -130,6 +130,110 @@ factory(App\Product::class,50)->create(); //生成 50 条 存入数据库
 factory(App\User::class,50)->make();      //生成 50 条 不存入数库
 ```
 
+### 模型文件
+用法如下：
+```php
+class Seller extends Model
+{
+    protected $table = 'seller';    //定义表名
+    protected $hidden = ['corporate', 'business', 'province', 'city', 'county', 'address'];    //all()方法不会被返回的字段
+    protected $appends = ['nickname', 'mobile']; //额外添加的返回信息 配合getColumnAttribute()方法得到。注意命名，如 nick_name 就是getNickNameAttribute()
+    public $timestamps = false;     //保存时不自动生成 created_at 与 updated_at 字段
+
+    public function getNicknameAttribute()
+    {
+        return $this->hasOne('App\User', 'id', 'user_id')->value('nickname'); // hasOne 一对一关系 id 是 to 表 user_id 是 本表
+    }
+
+    public function getCreateTimeAttribute()
+    {
+        $value = $this->attributes['create_time'];
+        return $value ? date('Y-m-d H:i:s', $value) : '';
+    }
+
+    public function getMobileAttribute()
+    {
+        return $this->hasOne('App\User', 'id', 'user_id')->value('mobile');
+    }
+
+}
+```
+
+### 中间件用法
+
+注册中间件，打开 `app/Http/Kernel.php` 用法如下：
+```php
+class Kernel extends HttpKernel
+{
+    /**
+     * 全局中间件
+     */
+    protected $middleware = [
+        \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
+        \App\Http\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        //\App\Http\Middleware\VerifyCsrfToken::class,
+        \Lib\ClusterSession\Middleware\StartSession::class,
+    ];
+
+    /**
+     * 路由中间件
+     */
+    protected $routeMiddleware = [
+        'access_control' => \App\Http\Middleware\AccessControl::class,
+        'api' => \App\Http\Middleware\Api::class,
+        'auth' => \App\Http\Middleware\Authenticate::class, //别名
+        'admin_auth' => \App\Http\Middleware\AdminAuthenticate::class,
+        'server_auth' => \App\Http\Middleware\ServerAuthenticate::class,
+        'CORS' => \App\Http\Middleware\CORS::class
+    ];
+}
+```
+
+创建 `app/Http/Middleware/Authenticate.php` 文件，如下：
+
+```php
+class Authenticate
+{
+    public function handle($request, Closure $next)
+    {
+        $value = SessionManager::get('user_id', null);
+
+        if(empty($value)){
+            return response()->json(['error' => '999', 'message' => '请先登录']);
+        }
+
+        return $next($request); //如果通过，去下一个请求
+    }
+
+
+}
+```
+
+在 `routes.php` 中使用，如下：
+
+```php
+// prefix 路由分组,middleware 中间件
+Route::group(['prefix' => 'api', 'middleware' => ['access_control', 'api', 'CORS']], function () {
+    Route::post('/user/info', ['uses' => 'Api\UserController@info', 'middleware' => ['auth']]);//用户中心
+    Route::get('/user/address', ['uses' => 'Api\UserController@UserAddress', 'middleware' => ['auth']]);//个人收货地址列表
+    Route::get('/user/address/info', ['uses' => 'Api\UserController@UserAddressInfo', 'middleware' => ['auth']]);//获取收货地址详情
+    Route::post('/user/address/post', ['uses' => 'Api\UserController@UserAddressPost', 'middleware' => ['auth']]);//获取收货地址详情
+    Route::post('/user/address/delete', ['uses' => 'Api\UserController@UserAddressDelete', 'middleware' => ['auth']]);//获取收货地址详情
+    Route::post('/user/modify', ['uses' => 'Api\UserController@modifyUserInfo', 'middleware' => ['auth']]);//获取收货地址详情
+        Route::post('/message/send', 'Api\SmsController@send');//发送短信
+        Route::post('/upload/configure', 'Api\DefaultController@upload');//发送短信
+    
+        Route::post('/user/register', 'Api\UserController@register');//用户注册接口
+        Route::post('/user/login', 'Api\UserController@login');//用户注册接口
+        Route::post('/user/signout', 'Api\UserController@signout');//退出接口
+}
+
+```
+
+
 ## 问题
 
 ### paginate 分页
@@ -146,3 +250,4 @@ factory(App\User::class,50)->make();      //生成 50 条 不存入数库
         return response()->json(['code' => 0, 'data' => $results->items(), 'count' => $results->total()]);
     }
 ```
+
