@@ -286,3 +286,14 @@ Laravel 5.1 中没有makeVisible 和 makeHidden 方法来临时显示或隐藏�
     }
 ```
 
+只能用于 `find` 方法，where 构造查询报错，我也很绝望啊。示例：
+```php
+public function test(Request $request)
+{
+    $id = $request->get('id');
+    
+    $pro = Product::find($id)->makeHidden('seller_id');
+    return response()->json($pro);
+}
+```
+
