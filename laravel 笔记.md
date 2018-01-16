@@ -124,7 +124,7 @@ $factory->define(App\Seller::class, function (Faker\Generator $faker) {
 });
 
 ```
-然后用 php artisan tinker 进如 laravel 命令行
+然后用 php artisan tinker 进入 laravel 命令行
 ```php
 factory(App\Product::class,50)->create(); //生成 50 条 存入数据库
 factory(App\User::class,50)->make();      //生成 50 条 不存入数库
@@ -255,7 +255,7 @@ Route::group(['prefix' => 'api', 'middleware' => ['access_control', 'api', 'CORS
 Laravel 5.1 中没有makeVisible 和 makeHidden 方法来临时显示或隐藏属性，打开 `/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php` 文件。添加如下两个方法：
 
 ```php
-public function makeVisible($attributes = null)
+    public function makeVisible($attributes = null)
     {
         $attributes = is_array($attributes) ? $attributes : func_get_args(); //func_get_args() 把函数接收到的参数转为数组
 
