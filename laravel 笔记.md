@@ -300,16 +300,16 @@ public function test(Request $request)
 ### 树状分类
 ```php
 
- public static function cate_merge($cates, $p_id = 0)
-    {
-        $arr = [];
-        foreach($cates as $v) {
-            if($v['p_id'] == $p_id) {
-                $v['children'] = self::cate_merge($cates, $v['id']);
-                $arr[] = $v;
+public static function tree($data,$pid=0,$level=0){
+        $results = array();
+        foreach ($data as $value){
+            if($value['p_id'] == $pid){
+                $value['level'] = $level;
+                $value['children'] = self::tree($data,$value['id'],$level + 1);
+                $results[] = $value;
             }
         }
-        return $arr;
+        return $results;
     }
 
 ```
