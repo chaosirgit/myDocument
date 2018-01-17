@@ -345,3 +345,19 @@ public static function tree($data,$pid=0,$level=0){
     
 ```
 
+### 自增字段值
+相当于 `update table set column = column + .$value` ，用法如下：
+```php
+
+        $car = Car::where('user_id',$user_id)->where('product_id',$product_id)->where('product_sku_id',$product_sku_id)->first();
+        if(empty($car)) {
+            $car = new Car();
+            $car->user_id        = $user_id;
+            $car->product_id     = $product_id;
+            $car->product_sku_id = $product_sku_id;
+            $car->product_num    = $product_num;
+        }else{
+            $car->increment('product_num',$product_num); //自增字段值
+        }
+
+```
