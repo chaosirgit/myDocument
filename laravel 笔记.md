@@ -235,6 +235,30 @@ Route::group(['prefix' => 'api', 'middleware' => ['access_control', 'api', 'CORS
 
 ```
 
+### 事务用法
+数据库引擎必须为 InnoDB 用法如下：
+```php
+public function test(Request $request){    
+    $car = new Car();
+    $car->user_id        = $request->get('user_id');
+    $car->product_id     = $request->get('product_id');
+    $car->product_sku_id = $request->get('product_sku_id');
+    $car->product_num    = $request->get('product_num');
+        
+        DB::beginTransaction();
+        try
+        {
+            $car->save();
+            $success = 1;
+        }catch (\Exception $ex){
+            DB::rollback();
+            $success = 0;
+            
+        }
+        DB::commit();
+return $success ? $this->success("操作成功") : $this->error("操作失败");
+}
+```
 
 ## 问题
 
