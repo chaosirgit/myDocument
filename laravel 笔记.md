@@ -138,7 +138,9 @@ class Seller extends Model
     protected $table = 'seller';    //定义表名
     protected $hidden = ['corporate', 'business', 'province', 'city', 'county', 'address'];    //all()方法不会被返回的字段
     protected $appends = ['nickname', 'mobile']; //额外添加的返回信息 配合getColumnAttribute()方法得到。注意命名，如 nick_name 就是getNickNameAttribute()
+    protected $dates = ['create_time']; //需要被转换成日期的属性 Carbon 类
     public $timestamps = false;     //保存时不自动生成 created_at 与 updated_at 字段
+    
 
     public function getNicknameAttribute()
     {
