@@ -303,14 +303,19 @@ public function test(Request $request)
 public static function tree($data,$pid=0,$level=0){
         $results = array();
         foreach ($data as $value){
+        // 递归点 如果当前记录的父 id 等于传入的父 id ，说明这个记录是传入父 id 的子级
             if($value['p_id'] == $pid){
                 $value['level'] = $level;
+                //递归调用，获得子级下的子级
                 $value['children'] = self::tree($data,$value['id'],$level + 1);
+                //push把以上结果赋给返回数据
                 $results[] = $value;
             }
+            //递归出口：遍历完成。
         }
+        //返回结果集
         return $results;
     }
-
+    
 ```
 
