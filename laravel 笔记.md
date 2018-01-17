@@ -297,3 +297,20 @@ public function test(Request $request)
 }
 ```
 
+### 树状分类
+```php
+
+ public static function cate_merge($cates, $p_id = 0)
+    {
+        $arr = [];
+        foreach($cates as $v) {
+            if($v['p_id'] == $p_id) {
+                $v['children'] = self::cate_merge($cates, $v['id']);
+                $arr[] = $v;
+            }
+        }
+        return $arr;
+    }
+
+```
+
