@@ -346,7 +346,7 @@ public static function tree($data,$pid=0,$level=0){
 ```
 
 ### 自增字段值
-相当于 `update table set column = column + .$value` ，用法如下：
+相当于 `update table set column = column + :value where user_id = :user_id` ，用法如下：
 ```php
 
         $car = Car::where('user_id',$user_id)->where('product_id',$product_id)->where('product_sku_id',$product_sku_id)->first();
