@@ -245,17 +245,17 @@ public function test(Request $request){
     $car->product_sku_id = $request->get('product_sku_id');
     $car->product_num    = $request->get('product_num');
         
-        DB::beginTransaction();
+        DB::beginTransaction();  //开始
         try
         {
             $car->save();
             $success = 1;
         }catch (\Exception $ex){
-            DB::rollback();
+            DB::rollback();     //回滚
             $success = 0;
             
         }
-        DB::commit();
+        DB::commit();           //提交
 return $success ? $this->success("操作成功") : $this->error("操作失败");
 }
 ```
