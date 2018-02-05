@@ -391,3 +391,10 @@ public static function tree($data,$pid=0,$level=0){
     }
 
 ```
+
+### 模型连接查询
+相当于 `select count(*) from user as a left join chunk as b on a.id=b.user_id where a.parent_id = 341`  
+
+```php
+$chunk_count = User::leftJoin('chunk','user.id','=','chunk.user_id')->where('user.parent_id',$user->parent_id)->count();
+```
