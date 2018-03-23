@@ -583,5 +583,42 @@ Excel::create($export_file_name, function ($excel) {
 })->store('xls', $path);
 ```
 
+## 七牛云 SDK 用法
+
+### 安装
+```php
+composer require qiniu/php-sdk
+```
+
+### 使用
+
+```php
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Setting;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Qiniu\Auth;
+
+class DefaultController extends Controller
+{
+    public function upload(){
+        $accessKey = Setting::getValueByKey('qn_accessKey');
+        $secretKey = Setting::getValueByKey('qn_secretKey');
+        $bucket = Setting::getValueByKey('qn_bucket_static');
+        $baseUrl = Setting::getValueByKey('qn_static_url');
+        
+        //构建鉴权对象
+        $auth = new Auth($accessKey,$secretKey);
+        
+        //生成上传 token
+        $token = $auth->uploadToken($bucket);
+
+        var_dump($token);
+    }
+}
+```
 
 
