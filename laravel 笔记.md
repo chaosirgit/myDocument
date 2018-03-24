@@ -697,6 +697,9 @@ class DefaultController extends Controller
                 });
             });
     }
+    
+                uploadInsts('#thum',false,0,'#thum_img');
+                uploadInsts('#imgs',true,5,'#imgs_list');
 ```
 
 ##### PHP 接收七牛云 key 拼接图片地址
