@@ -583,7 +583,7 @@ Excel::create($export_file_name, function ($excel) {
 })->store('xls', $path);
 ```
 
-## 七牛云 SDK 用法
+## 七牛云 SDK 结合 layui 用法
 
 ### 安装
 ```php
@@ -592,6 +592,7 @@ composer require qiniu/php-sdk
 
 ### 使用
 
+#### PHP 返回上传 token  
 ```php
 <?php
 
@@ -616,9 +617,114 @@ class DefaultController extends Controller
         //生成上传 token
         $token = $auth->uploadToken($bucket);
 
-        var_dump($token);
+        return $token;
     }
 }
 ```
 
+####  layui 携带 token 请求七牛云上传接口
 
+##### layui HTML 代码
+```html
+<div class="layui-form-item">
+            <label class="layui-form-label" for="fileInput">缩略图</label>
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" id="thum">上传图片</button>
+                <div class="layui-upload-list">
+                    <div  id="thum_img"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="fileInput">详细图</label>
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" id="imgs">
+                    上传
+                </button>
+                <div class="layui-upload-list">
+                    <div id="imgs_list"></div>
+                </div>
+            </div>
+        </div>
+```
+
+##### layui JS 代码
+```javascript
+     function uploadInsts(elem,multiple,number,imgDiv){
+            if(multiple == null){
+                multiple = false;
+            }
+            if(number == null){
+                number = 0;
+            }
+            layui.use(['upload'],function () {
+                var $ = layui.jquery
+                    ,upload = layui.upload;
+                upload.render({
+
+                    elem: elem                      //上传按钮ID
+                    ,url: 'https://up.qbox.me/'     //七牛云上传接口
+                    ,data:{'token':'{{$token ?? null}}'}    //携带 token
+                    ,multiple:multiple              //是否多个图片
+                    ,number:number                  //最多上传图片数量
+                    // ,before: function(obj){
+                    //     //预读本地文件示例，不支持ie8
+                    //     obj.preview(function(index, file, result){
+                    //         $('#demo1').attr('src', result); //图片链接（base64）
+                    //     });
+                    // }
+                    ,done: function(res){
+                        //res 上传成功后七牛云返回数据 
+                        $.ajax({
+                            url:"{{url('admin/upload_save')}}"      //请求 php 接口
+                            ,data:{'key':res.key,'multiple':multiple,'num':number} //res.key图片名
+                            ,type:'post'
+                            ,success:function(result){
+                                if(result.error > 0){           //失败
+                                    layer.msg(result.msg);
+                                }else{                          //成功 拿到拼接后的图片url展示
+                                    $(imgDiv).append("<img class='layui-upload-img' style='width:150px;height:150px;margin-right:3px;' src='"+result.msg+"'>");
+                                }
+                            }
+                        });
+                    }
+                    ,error: function(){     //上传失败
+                        layer.msg('请刷新重试');
+                        return false;
+                    }
+                });
+            });
+    }
+```
+
+##### PHP 接收七牛云 key 拼接图片地址
+```php
+<?php
+
+public function uploadSave(Request $request){
+        $key = $request->get('key',null);
+        $multiple = $request->get('multiple',false);
+        $num = $request->get('number',1);
+        if(empty($key)){
+            return $this->error('上传图片错误请重试');
+        }
+        $type = 'image';
+        $user_id = User::getAdminId();
+        $uploads = new Uploads();
+        $uploads->type = $type;
+        $uploads->user_id = $user_id;
+        $uploads->key = $key;
+        $uploads->time = time();
+        try{
+            $uploads->save();
+            $result = Setting::getValueByKey('qn_static_url').'/'.$key;
+            return $this->success($result);
+        }catch (\Exception $exception){
+            return $this->error($exception->getMessage());
+        }
+    }
+    
+?>
+```
