@@ -913,5 +913,5 @@ public function uploadShow(Request $request){
 
 7. 事件实例
 ```blade
-                <button type="button" class="layui-btn" onclick="layer_show('上传图片','{{url('admin/upload_select')}}?type=checkbox&callback=imgsList',800,600)" >
+<button type="button" class="layui-btn" onclick="layer_show('上传图片','{{url('admin/upload_select')}}?type=checkbox&callback=imgsList',800,600)" >
 ```
