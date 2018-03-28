@@ -915,3 +915,70 @@ public function uploadShow(Request $request){
 ```blade
 <button type="button" class="layui-btn" onclick="layer_show('上传图片','{{url('admin/upload_select')}}?type=checkbox&callback=imgsList',800,600)" >
 ```
+
+
+## laravel overtrue/wechat 网页授权中间件用法:
+
+```php
+    public function handle($request, Closure $next, $account = 'default', $scopes = null)
+    {
+        // $account 与 $scopes 写反的情况
+        if (is_array($scopes) || (\is_string($account) && str_is('snsapi_*', $account))) {
+            list($account, $scopes) = [$scopes, $account];
+            $account || $account = 'default';
+        }
+
+        $isNewSession = false;
+        $sessionKey = \sprintf('user_id', $account);
+        $config = config(\sprintf('wechat.official_account.%s', $account), []);
+        $officialAccount = app(\sprintf('wechat.official_account.%s', $account));
+        $scopes = $scopes ?: array_get($config, 'oauth.scopes', ['snsapi_base']);
+
+        if (is_string($scopes)) {
+            $scopes = array_map('trim', explode(',', $scopes));
+        }
+
+//        $session = session($sessionKey, []);
+
+        if (!session($sessionKey)) {
+            if ($request->has('code')) {
+
+                $wechat_user = $officialAccount->oauth->user();         //取得openid
+                $data['openid'] = $wechat_user->getId() ?? '';
+                $has = UserWechat::getByOpenid($data['openid']);
+                $has_user = User::where('tync_openid',$data['openid'])->first();
+                if(!empty($has) && !empty($has_user)){              //openid 在库里跳转到下一步
+                    $user_id = User::where('tync_openid',$data['openid'])->first()->id ?? 0;
+                    session([$sessionKey => $user_id ?? '']);
+                    return $next($request);
+                }else{                                              //不再库里
+                    $data['nickname'] = $wechat_user->getNickname() ?? '';
+                    if(empty($data['nickname'])){                   //取不到nickname 使用授权登陆
+                        session([$sessionKey => '']);
+                        return $officialAccount->oauth->scopes(['snsapi_userinfo'])->redirect($request->fullUrl());
+                    }else{                                          //取到nickname 存库
+                        $data['headimgurl'] = $wechat_user->getAvatar() ?? '';
+                        UserWechat::createUser($data);
+                        User::createWeChat($data);
+                        $user_id = User::where('tync_openid',$data['openid'])->first()->id ?? 0;
+                        session([$sessionKey => $user_id ?? '']);
+                    }
+                }
+
+                $isNewSession = true;
+
+//                Event::fire(new WeChatUserAuthorized(session($sessionKey), $isNewSession, $account));
+
+                return redirect()->to($this->getTargetUrl($request));
+            }
+
+            session()->forget($sessionKey);
+
+            return $officialAccount->oauth->scopes($scopes)->redirect($request->fullUrl()); //获取code-回调到本页
+        }
+
+//        Event::fire(new WeChatUserAuthorized(session($sessionKey), $isNewSession, $account));
+
+        return $next($request);
+    }
+```
