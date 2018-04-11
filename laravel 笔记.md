@@ -260,6 +260,49 @@ return $success ? $this->success("操作成功") : $this->error("操作失败");
 }
 ```
 
+
+### 全局作用域 global Scope 用法
+建立 App/Scopes/SiteScope.php  
+```php
+<?php
+namespace App\Scopes;
+use App\Site;
+use Illuminate\Database\Eloquent\ScopeInterface;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+class SiteScope implements ScopeInterface{
+    public function apply(Builder $builder, Model $model) {
+        $site = Site::getSiteId();
+        return $builder->where('site_id', $site);
+    }
+    public function remove(Builder $builder, Model $model)      //必须有remove
+    {
+        $column = $model->getQualifiedDeletedAtColumn();
+
+        $query = $builder->getQuery();
+
+        foreach ((array) $query->wheres as $key => $where)
+        {
+            // If the where clause is a soft delete date constraint, we will remove it from
+            // the query and reset the keys on the wheres. This allows this developer to
+            // include deleted model in a relationship result set that is lazy loaded.
+            if ($this->isSoftDeleteConstraint($where, $column))
+            {
+                unset($query->wheres[$key]);
+
+                $query->wheres = array_values($query->wheres);
+            }
+        }
+    }
+}
+```
+在所使用模型里重写 boot 方法
+```php
+    protected static function boot(){
+        parent::boot();
+        static::addGlobalScope(new SiteScope());
+    }
+```
 ## 问题
 
 ### paginate 分页
