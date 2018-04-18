@@ -1043,7 +1043,7 @@ public function uploadShow(Request $request){
         }
 ```
 
-#### 使用中间价即可
+#### 使用中间件即可
 ```php
 Route::group(['prefix' => 'api', 'middleware' => ['wechat.oauth']],function(){
     Route::get('login','WeChatController@login');
