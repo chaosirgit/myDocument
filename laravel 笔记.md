@@ -1114,7 +1114,7 @@ public function payment(Request $request)
                   success:function(data){
                       if(data.error == 0){
                           if(type == "wechat_pay"){
-                                  return  WeixinJSBridge.invoke(        //唤起微信支付
+                                  return  WeixinJSBridge.invoke(        //微信支付
                                       'getBrandWCPayRequest',
                                       data.msg,
                                       function(res){
