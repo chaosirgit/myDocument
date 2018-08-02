@@ -321,7 +321,7 @@ class SiteScope implements ScopeInterface{
 ```
 
 ### 临时显示隐藏属性
-Laravel 5.1 中没有makeVisible 和 makeHidden 方法来临时显示或隐藏属性，打开 `/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php` 文件。添加如下两个方法：
+Laravel 5.1 中没有 makeVisible 和 makeHidden 方法来临时显示或隐藏属性，打开 `/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php` 文件。添加如下两个方法：
 
 ```php
     public function makeVisible($attributes = null)
