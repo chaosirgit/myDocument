@@ -116,6 +116,8 @@ var (
   v29 = map[string]int{"one":1,"two":2}	//字典类型 string是键的类型 int是值的类型
   v30 = make(map[string]int) //字典类型 这种方法初始化后可以像PHP那样往字典中添加键值对 如 v30["one"] = 1 上面那种方法不可以
   v31 = *int //指向存储 int 类型值的指针类型 
+  v32 = chan int //通道类型 其中只能传递 int 类型的值
+  v33 = make(chan int) //通道类型 初始化一个通道类型，其中只能传递 int 类型的值
 )
 ```
 
